@@ -11,12 +11,17 @@ https://djangosnippets.org/snippets/259/
 
 Requires:
 
-  * Django >=1.4
+  * Django >=1.8
+  * Python 2.7 or >=3.3
 
 Installation
 ------------
 
     $ python setup.py install
+
+You can use Pip:
+
+    $ pip install django-ordered-model
 
 Usage
 -----
@@ -125,8 +130,35 @@ To add arrows in the admin change list page to do reordering, you can use the
     admin.site.register(Item, ItemAdmin)
 
 
+For a many-to-many relationship you need the following in the admin.py file:
+
+    from django.contrib import admin
+    from ordered_model.admin import OrderedTabularInline
+    from models import Pizza, PizzaToppingsThroughModel
+
+    class PizzaToppingsThroughModelInline(OrderedTabularInline):
+        model = PizzaToppingsThroughModel
+        fields = ('topping', 'order', 'move_up_down_links',)
+        readonly_fields = ('order', 'move_up_down_links',)
+        extra = 1
+        ordering = ('order',)
+
+    class PizzaAdmin(admin.ModelAdmin):
+        list_display = ('name', )
+        inlines = (PizzaToppingsThroughModelInline, )
+
+        def get_urls(self):
+            urls = super(PizzaAdmin, self).get_urls()
+            for inline in self.inlines:
+                if hasattr(inline, 'get_urls'):
+                    urls = inline.get_urls(self) + urls
+            return urls
+
+    admin.site.register(Pizza, PizzaAdmin)
+
 Test suite
 ----------
 
-    $ ./run_tests.sh
+Requires Docker.
 
+    $ script/test

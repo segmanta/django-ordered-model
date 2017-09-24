@@ -60,7 +60,7 @@ class OrderedModelBase(models.Model):
 
     def get_ordering_queryset(self, qs=None):
         if qs is None:
-            self._get_class_for_ordering_queryset().objects.all()
+            qs = self._get_class_for_ordering_queryset().objects.all()
 
         order_with_respect_to = self.order_with_respect_to
         if order_with_respect_to:
